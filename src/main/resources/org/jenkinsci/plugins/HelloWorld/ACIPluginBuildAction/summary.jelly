@@ -1,0 +1,104 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" 
+xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:p="/lib/hudson/project" 
+xmlns:i="jelly:fmt" xmlns:local="local">
+
+    <!-- *************** -->
+    <!-- Import librairy -->
+    <!-- *************** -->
+    
+
+   <!-- Css -->
+    <link type="text/css" href="${rootURL}/plugin/HelloWorld/lib/jquery/css/smoothness/jquery-ui-1.8.6.custom.css" rel="stylesheet" />
+
+    <link type="text/css" href="${rootURL}/plugin/HelloWorld/css/summary_report.css" rel="stylesheet" />
+
+    <!-- JQuery lib -->
+    <script type="text/javascript" src="${rootURL}/plugin/HelloWorld/lib/jquery/js/jquery-1.4.2.min.js"></script>
+    <script type="text/javascript" src="${rootURL}/plugin/HelloWorld/js/summary_report.js"></script>
+    <script type="text/javascript" src="${rootURL}/plugin/HelloWorld/lib/jquery/js/jquery-ui-1.8.6.custom.min.js"></script>
+
+    
+    <!-- Cookies lib -->
+    <script type="text/javascript" src="${rootURL}/plugin/HelloWorld/lib/jquery.cookie.js"></script>
+    <script type="text/javascript" src="${rootURL}/plugin/HelloWorld/lib/jquery.tablesorter.min.js"></script>
+    <script type="text/javascript" src="${rootURL}/plugin/HelloWorld/lib/douglascrockford-JSON-js/json2.js"></script>
+
+
+    <!-- *************** -->
+    <!--     Main        -->
+    <!-- *************** -->
+    
+    <tr>
+        <td colspan="3">
+            <div class="summary_report_build">
+                <j:set var="projectname" value="${from.getProjectName()}"/>
+                <j:set var="buildnumber" value="${from.getBuildNumber()}"/>
+
+                
+                <!-- For each file .xml-->
+                <j:forEach var="a" items="${it.report.section}" indexVar="indexA">
+
+                    <h2 style="color:${a.fontColor};">${a.sectionName}</h2>
+
+                    <!-- For each object in the section -->
+                    <j:forEach var="b" items="${a.objectList}" indexVar="indexB">
+
+                        <!-- If the object is a table -->
+                        <j:if test="${b.status == 'table'}">
+                            <st:include page="/org/jenkinsci/plugins/HelloWorld/ACIPluginBuildAction/componentTable.jelly" />
+                        </j:if>
+
+                        <!-- If the object is a field -->
+                        <j:if test="${b.status == 'field'}">
+                            <st:include page="/org/jenkinsci/plugins/HelloWorld/ACIPluginBuildAction/componentField.jelly" />
+                        </j:if>
+
+
+                        <!-- If the object is an accordion -->
+                        <j:if test="${b.status == 'accordion'}">
+                            <st:include page="/org/jenkinsci/plugins/HelloWorld/ACIPluginBuildAction/componentAccordion.jelly" />
+                        </j:if>
+
+                         <!-- If the object is a tab -->
+                        <j:if test="${b.status == 'tabs'}">
+                            <st:include page="/org/jenkinsci/plugins/HelloWorld/ACIPluginBuildAction/componentTabs.jelly" />
+                        </j:if>
+
+                    </j:forEach>
+
+                </j:forEach>
+                
+                <!-- For each fileError-->
+                <j:if test="${from != null}">
+                    <j:forEach var="c" items="${from.getFileError()}" indexVar="indexC">
+                        <h2 style="color:${c[0]};">${c[1]}: <a style="color:${c[2]};" href="${c[4]}">${c[5]}</a></h2>
+                    </j:forEach>
+                </j:if>                
+                
+                                          執行的JOB:${from.getProjectName()}
+                
+            </div>
+            
+        </td>        
+    </tr>
+    <tr>
+        <td colspan="3">
+             <!--
+             <a onclick="return build_${id}(this)" class="task-link" href="/job/bli-test-upload">直接上傳</a>
+             -->
+        
+             <j:set var="id" value="${h.generateId()}"/>
+             <l:task icon="images/24x24/clock.png" href="${url}/job/${from.getProjectName()}-upload" title="直接上傳"
+              onclick="${'return build_' + id + '(this)'}" post="true" permission="${it.BUILD}"/>
+             <script>
+                 function build_${id}(a) {
+                     new Ajax.Request(a.href+"/build?delay=0sec");
+                     hoverNotification('${%Build scheduled}',a.parentNode);
+                     return true;
+                 }
+             </script>
+        </td>
+    </tr>
+
+</j:jelly>
